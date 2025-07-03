@@ -1,0 +1,14 @@
+requests
+beautifulsoup4
+langchain==0.3.21
+langchain-community
+langchain-openai
+chromadb==1.0.13
+openai
+python-dotenv
+certifi
+loguru
+tabulate
+psycopg2-binary
+pgvector
+pydantic_settings

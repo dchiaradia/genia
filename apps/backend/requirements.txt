@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+requests
+langchain==0.3.21
+langchain-community
+langchain-openai
+langchain-postgres
+openai
+loguru
+tabulate
+psycopg[binary]
+psycopg2-binary
+pgvector
+confluent-kafka

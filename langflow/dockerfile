@@ -1,0 +1,11 @@
+FROM langflowai/langflow:latest
+
+# precisamos estar como root para alterar pip
+USER root
+
+# remove o cliente pesado e instala só o HTTP-only client
+RUN pip uninstall -y chromadb \
+ && pip install chromadb-client
+
+# volta pro usuário padrão (opcional, mas recomendado)
+USER langflow

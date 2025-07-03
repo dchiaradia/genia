@@ -1,0 +1,30 @@
+# 1) Base Python
+FROM python:3.11-slim
+
+# 1) Instala gcc e librdkafka-dev
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      build-essential \
+      librdkafka-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+
+# 2) Define diretório de trabalho
+WORKDIR /app
+
+# 3) Copia requirements.txt (crie-o em backend/ com as deps do FastAPI)
+COPY apps/backend/requirements.txt .
+
+# 4) Instala deps
+RUN pip install --upgrade pip setuptools wheel \
+ && pip install --prefer-binary -r requirements.txt
+
+# 5) Copia o código do aplicativo
+COPY apps/backend/app ./app
+
+
+# 6) Expõe a porta (opcional, só serve de documentação)
+EXPOSE 8000
+
+# 7) Comando de inicialização
+#  uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

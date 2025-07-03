@@ -1,0 +1,23 @@
+FROM python:3.11-slim
+
+# 1) Instala gcc, make e headers do Python
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      build-essential \
+      gcc \
+      libffi-dev \
+      python3-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# 2) Cria o virtualenv e copia requirements
+WORKDIR /app
+COPY widgets/crawler_sample/requirements.txt /app/requirements.txt
+
+# 3) Instala só as wheels possíveis
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --prefer-binary -r requirements.txt
+
+# 4) Copia seu código
+COPY widgets/crawler_sample/ /app/
+
+CMD ["python", "crawler.py"]
