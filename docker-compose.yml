@@ -14,16 +14,6 @@ services:
     depends_on:
       - postgres
 
-  uol_crawler:
-    container_name: uol_crawler_sample
-    build:
-      context: .
-      dockerfile: ./widgets/crawler_sample/dockerfile
-    env_file:
-      - ./.env
-    depends_on:
-      - postgres
-    command: ["python", "crawler.py"]
 
   langflow:
     container_name: langflow
@@ -64,32 +54,26 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  
-  zookeeper:
-    container_name: kafka-zookeeper
-    image: confluentinc/cp-zookeeper:7.5.0
-    ports:
-      - "2181:2181"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-
   kafka:
-    image: confluentinc/cp-kafka:7.5.0
+    image: bitnami/kafka:latest
     container_name: kafka
-    depends_on:
-      - zookeeper
     ports:
       - "9092:9092"
-      - "29092:9092"
+      - "9093:9093"
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: PLAINTEXT_INTERNAL://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT_HOST://localhost:29092,PLAINTEXT_INTERNAL://kafka:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT_INTERNAL:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_CFG_NUM_PARTITIONS=1
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    volumes:
+      - kraft-data:/bitnami/kafka/data
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -99,7 +83,7 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+      # KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
     ports:
       - "8080:8080"
 
@@ -121,3 +105,4 @@ services:
 volumes:
   langflow-data:
   pgdata:
+  kraft-data:
